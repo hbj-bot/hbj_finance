@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fff4f0">
 <title>닮은꼴 연예인 찾기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +17,6 @@
     --card: #ffffff;
     --ink: #3d2a33;
     --muted: #8c7480;
-    --line: #f3d6df;
     --pink: #ff6f9c;
     --pink-deep: #e2477a;
     --pink-soft: #ffe3ec;
@@ -33,19 +33,20 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #221920; --dot: #33242d; --card: #2d2229; --ink: #f8e9ef; --muted: #bba3ae;
-      --line: #4a3540; --pink: #ff86ab; --pink-deep: #ff9fbd; --pink-soft: #4a2a37;
+      --pink: #ff86ab; --pink-deep: #ff9fbd; --pink-soft: #4a2a37;
       --mint: #6fd8bf; --mint-soft: #213f38; --danger-soft: #4a2229;
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
     --bg: #221920; --dot: #33242d; --card: #2d2229; --ink: #f8e9ef; --muted: #bba3ae;
-    --line: #4a3540; --pink: #ff86ab; --pink-deep: #ff9fbd; --pink-soft: #4a2a37;
+    --pink: #ff86ab; --pink-deep: #ff9fbd; --pink-soft: #4a2a37;
     --mint: #6fd8bf; --mint-soft: #213f38; --danger-soft: #4a2229;
     color-scheme: dark;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     background-color: var(--bg);
@@ -55,118 +56,108 @@
     font-family: var(--font-body);
     font-size: 15px;
     line-height: 1.6;
+    overflow-x: hidden;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
-  .wrap { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; }
+  .wrap {
+    max-width: 880px; margin: 0 auto;
+    padding-inline: max(16px, env(safe-area-inset-left, 0px));
+    padding-block: max(24px, env(safe-area-inset-top, 0px)) max(56px, env(safe-area-inset-bottom, 0px));
+  }
 
   /* ---------- 헤더 ---------- */
   .hero { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
   .mascot { width: 112px; height: 112px; flex: none; animation: bob 2.6s ease-in-out infinite; }
   .hero h1 {
     margin: 0; font-family: var(--font-display); font-weight: 400;
-    font-size: clamp(32px, 7vw, 46px); line-height: 1.15; text-wrap: balance;
+    font-size: clamp(30px, 8vw, 46px); line-height: 1.15; text-wrap: balance;
   }
   .hero h1 .hl { color: var(--pink); }
-  .hero p { margin: 4px 0 0; color: var(--muted); }
+  .hero p { margin: 4px 0 0; color: var(--muted); text-wrap: balance; }
   @keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
 
+  /* ---------- 상태 표시 ---------- */
   .status {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    margin: 22px auto 0; max-width: 560px; padding: 10px 16px; border-radius: 999px;
-    background: var(--mint-soft); color: var(--ink); font-size: 14px;
+    margin: 22px auto 0; max-width: 560px; padding: 10px 18px; border-radius: 20px;
+    background: var(--mint-soft); color: var(--ink); font-size: 14px; text-align: center;
   }
-  .status.error { background: var(--danger-soft); color: var(--danger); border-radius: 18px; }
+  .status .line { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .status.error { background: var(--danger-soft); color: var(--danger); }
   .spinner {
     width: 16px; height: 16px; border-radius: 50%; flex: none;
     border: 3px solid var(--mint); border-right-color: transparent; animation: spin .8s linear infinite;
   }
   .status.error .spinner { display: none; }
+  .progress {
+    height: 10px; margin-top: 8px; border-radius: 99px; overflow: hidden;
+    background: var(--card); border: 2px solid var(--ink);
+  }
+  .progress > div { height: 100%; width: 0; background: var(--mint); transition: width .3s; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ---------- 카드 ---------- */
   .card {
     position: relative; background: var(--card); border: 2.5px solid var(--ink);
-    border-radius: 26px; padding: 24px 22px; margin-top: 30px;
+    border-radius: 26px; padding: 24px 20px; margin-top: 30px;
     box-shadow: 6px 6px 0 var(--pink-soft);
   }
   .step {
-    position: absolute; top: -15px; left: 22px; padding: 2px 14px; border-radius: 999px;
+    position: absolute; top: -15px; left: 20px; padding: 2px 14px; border-radius: 999px;
     font-family: var(--font-display); font-size: 15px; letter-spacing: .04em;
     background: var(--pink); color: #fff; border: 2.5px solid var(--ink);
   }
-  .step.mint { background: var(--mint); color: #1f3d36; }
   .step.sun { background: var(--sun); color: #3d2a33; }
   .card h2 { margin: 6px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 23px; }
-  .card .desc { margin: 0 0 18px; color: var(--muted); font-size: 14px; max-width: 65ch; }
-  .card .desc b { color: var(--ink); }
-  code { font-family: inherit; background: var(--pink-soft); color: var(--ink); padding: 1px 6px; border-radius: 6px; }
+  .card .desc { margin: 0 0 16px; color: var(--muted); font-size: 14px; max-width: 65ch; }
 
-  /* ---------- 버튼 ---------- */
-  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 10px 20px; border-radius: 999px; border: 2.5px solid var(--ink);
-    background: var(--pink); color: #fff; font-family: var(--font-display); font-size: 16px;
-    cursor: pointer; box-shadow: 0 4px 0 var(--ink); transition: transform .1s, box-shadow .1s;
+  /* ---------- 비교 대상 선택 ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip {
+    padding: 7px 16px; min-height: 40px; border-radius: 999px; border: 2px solid var(--ink);
+    background: var(--card); color: var(--ink); font-family: var(--font-display); font-size: 15px;
+    cursor: pointer;
   }
-  .btn:hover { transform: translateY(-1px); }
-  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
-  .btn.ghost { background: var(--card); color: var(--ink); }
-  .btn.small { padding: 6px 14px; font-size: 14px; box-shadow: 0 3px 0 var(--ink); }
-  .btn.danger { background: var(--danger); color: #fff; }
-  .btn:focus-visible, .drop:focus-within, .row:focus-within > label.btn { outline: 3px solid var(--mint); outline-offset: 3px; }
-  input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-  .count { font-size: 14px; color: var(--muted); }
-  .confirm { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
-
-  /* ---------- 연예인 목록 ---------- */
-  .celeb-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
-    gap: 14px; margin-top: 18px;
-  }
-  .celeb { position: relative; text-align: center; font-size: 13px; min-width: 0; }
-  .celeb img {
-    width: 100%; max-width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 50%;
-    border: 2.5px solid var(--ink); background: var(--pink-soft);
-  }
-  .celeb:nth-child(3n+1) img { transform: rotate(-3deg); }
-  .celeb:nth-child(3n+2) img { transform: rotate(2deg); }
-  .celeb .name { margin-top: 4px; word-break: break-all; }
-  .celeb .del {
-    position: absolute; top: 0; right: 4px; width: 24px; height: 24px;
-    border-radius: 50%; border: 2px solid var(--ink); background: var(--card); color: var(--ink);
-    cursor: pointer; font-size: 12px; line-height: 1; padding: 0;
-  }
-  .celeb .del:hover { background: var(--danger); color: #fff; }
-  .empty {
-    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
-    padding: 14px 16px; border-radius: 18px; background: var(--pink-soft); color: var(--ink); font-size: 14px;
-  }
-  .ghost-face { display: flex; flex: none; }
-  .ghost-face span {
-    width: 34px; height: 34px; border-radius: 50%; border: 2px dashed var(--pink);
-    background: var(--card); margin-left: -10px;
-  }
-  .ghost-face span:first-child { margin-left: 0; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+  .chip:focus-visible { outline: 3px solid var(--mint); outline-offset: 2px; }
 
   /* ---------- 업로드 ---------- */
+  input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   .drop {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
     border: 3px dashed var(--pink); border-radius: 24px; padding: 26px 16px;
     text-align: center; color: var(--muted); cursor: pointer; background: var(--pink-soft);
-    transition: transform .15s;
+    transition: transform .15s; touch-action: manipulation;
   }
   .drop:hover, .drop.over { transform: scale(1.01) rotate(-.5deg); color: var(--ink); }
+  .drop:active { transform: scale(.98); }
+  .drop:focus-within { outline: 3px solid var(--mint); outline-offset: 3px; }
   .drop .cam { width: 64px; height: 64px; }
   .drop:hover .cam, .drop.over .cam { animation: wiggle .5s ease-in-out; }
   .drop strong { font-family: var(--font-display); font-weight: 400; font-size: 19px; color: var(--ink); }
   @keyframes wiggle { 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
   .preview {
-    position: relative; max-width: 320px; margin: 20px auto 0;
+    position: relative; max-width: 300px; margin: 20px auto 0;
     border: 2.5px solid var(--ink); border-radius: 22px; overflow: hidden;
     box-shadow: 6px 6px 0 var(--mint-soft);
   }
-  .preview img, .preview canvas { width: 100%; max-width: 100%; display: block; }
-  .preview canvas { position: absolute; inset: 0; height: 100%; }
+  .preview canvas { width: 100%; max-width: 100%; display: block; }
+
+  /* ---------- 후보 연예인 ---------- */
+  .pool-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 22px; }
+  .pool-head h3 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 17px; }
+  .pool-head span { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pool {
+    display: flex; gap: 10px; overflow-x: auto; padding: 8px 2px 10px; margin-top: 4px;
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  }
+  .pool figure { margin: 0; flex: none; width: 58px; text-align: center; scroll-snap-align: start; }
+  .pool img {
+    width: 58px; height: 58px; border-radius: 50%; object-fit: cover; display: block;
+    border: 2px solid var(--ink); background: var(--pink-soft);
+  }
+  .pool figcaption { font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pool .ph { width: 58px; height: 58px; border-radius: 50%; border: 2px dashed var(--pink); background: var(--pink-soft); }
 
   /* ---------- 결과 ---------- */
   .verdict {
@@ -186,8 +177,7 @@
   @keyframes pop { from { transform: scale(.6) translateY(20px); opacity: 0; } }
   .crown { position: absolute; top: -26px; left: 50%; width: 52px; height: 36px; transform: translateX(-50%) rotate(-8deg); }
   .medal {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 2px 14px; border-radius: 999px; border: 2px solid var(--ink);
+    display: inline-flex; padding: 2px 14px; border-radius: 999px; border: 2px solid var(--ink);
     font-family: var(--font-display); font-size: 16px; color: #3d2a33; margin-bottom: 10px;
   }
   .r1 .medal { background: var(--sun); }
@@ -195,10 +185,12 @@
   .r3 .medal { background: var(--bronze); }
   .rank img {
     width: 78%; max-width: 150px; aspect-ratio: 1; object-fit: cover; border-radius: 50%;
-    border: 3px solid var(--ink);
+    border: 3px solid var(--ink); background: var(--pink-soft);
   }
   .r1 img { max-width: 180px; }
-  .cname { font-family: var(--font-display); font-size: 20px; margin-top: 8px; word-break: break-all; }
+  .cname { font-family: var(--font-display); font-size: 20px; margin-top: 8px; word-break: keep-all; }
+  .cname a { color: inherit; text-decoration: none; }
+  .cname a:hover { text-decoration: underline; }
   .bar {
     height: 12px; background: var(--pink-soft); border: 2px solid var(--ink);
     border-radius: 99px; overflow: hidden; margin: 8px 8px 4px;
@@ -207,14 +199,23 @@
   .score { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .score b { color: var(--ink); font-family: var(--font-display); font-weight: 400; font-size: 20px; }
   .note { font-size: 12px; color: var(--muted); margin: 22px 0 0; }
+  .note a, footer a { color: inherit; }
   footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
 
-  @media (max-width: 560px) {
-    .hero { text-align: center; }
-    .mascot { width: 90px; height: 90px; }
-    .podium { grid-template-columns: 1fr; gap: 30px; }
-    .rank.r1, .rank.r2, .rank.r3 { order: 0; }
-    .rank img { width: 46%; }
+  @media (max-width: 600px) {
+    body { font-size: 14px; }
+    .hero { text-align: center; gap: 8px; }
+    .mascot { width: 84px; height: 84px; }
+    .card { padding: 22px 16px; border-radius: 22px; }
+    /* 휴대폰: 1등은 위에 크게, 2·3등은 아래 나란히 */
+    .podium { grid-template-columns: 1fr 1fr; gap: 26px 12px; }
+    .rank.r1 { grid-column: 1 / -1; order: 0; }
+    .rank.r2 { order: 1; }
+    .rank.r3 { order: 2; }
+    .rank.r1 img { width: 52%; }
+    .rank.r2 img, .rank.r3 img { width: 70%; }
+    .cname { font-size: 17px; }
+    .r1 .cname { font-size: 22px; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -244,29 +245,22 @@
     </div>
   </header>
 
-  <div id="status" class="status"><span class="spinner"></span><span id="statusText">AI 얼굴 분석 모델을 불러오는 중이에요...</span></div>
+  <div id="status" class="status" role="status">
+    <div class="line"><span class="spinner"></span><span id="statusText">AI 얼굴 분석 모델을 불러오는 중이에요...</span></div>
+    <div class="progress" id="progress" hidden><div id="progressBar"></div></div>
+  </div>
 
   <section class="card">
     <span class="step">STEP 1</span>
-    <h2>비교할 연예인 모으기</h2>
-    <p class="desc">
-      연예인 얼굴 사진을 여러 장 골라주세요. <b>파일 이름이 연예인 이름</b>이 돼요.
-      <code>아이유.jpg</code>, <code>아이유_2.jpg</code>는 둘 다 "아이유"로 묶이고, 한 사람당 사진이 많을수록 정확해져요.
-      등록한 연예인은 이 브라우저에만 저장돼요.
-    </p>
-    <div class="row">
-      <label class="btn" for="celebInput">＋ 연예인 사진 추가</label>
-      <input type="file" id="celebInput" accept="image/*" multiple>
-      <span id="clearArea"></span>
-      <span id="celebCount" class="count"></span>
-    </div>
-    <div id="celebGrid" class="celeb-grid"></div>
-  </section>
-
-  <section class="card">
-    <span class="step mint">STEP 2</span>
     <h2>내 사진 올리기</h2>
-    <p class="desc">정면 얼굴이 또렷하게 나온 사진일수록 잘 맞혀요. 사진은 어디에도 전송되지 않고 내 브라우저 안에서만 분석해요.</p>
+    <p class="desc">정면 얼굴이 또렷하게 나온 사진일수록 잘 맞혀요. 내 사진은 어디에도 전송되지 않고 기기 안에서만 분석해요.</p>
+
+    <div class="chips" role="group" aria-label="비교할 연예인">
+      <button class="chip" type="button" data-g="all" aria-pressed="true">전체</button>
+      <button class="chip" type="button" data-g="f" aria-pressed="false">여자 연예인</button>
+      <button class="chip" type="button" data-g="m" aria-pressed="false">남자 연예인</button>
+    </div>
+
     <label class="drop" id="drop" for="photoInput">
       <svg class="cam" viewBox="0 0 64 64" aria-hidden="true">
         <rect x="6" y="18" width="52" height="36" rx="10" fill="#ff6f9c" stroke="#3d2a33" stroke-width="3"/>
@@ -275,14 +269,19 @@
         <circle cx="32" cy="36" r="5" fill="#3d2a33"/>
         <circle cx="49" cy="26" r="2.5" fill="#ffc23d"/>
       </svg>
-      <strong>여기를 눌러 사진 고르기</strong>
-      <span>또는 사진을 끌어다 놓아도 돼요</span>
+      <strong>눌러서 사진 찍기 · 고르기</strong>
+      <span>컴퓨터에서는 사진을 끌어다 놓아도 돼요</span>
       <input type="file" id="photoInput" accept="image/*">
     </label>
     <div class="preview" id="preview" hidden>
-      <img id="previewImg" alt="업로드한 사진">
-      <canvas id="overlay"></canvas>
+      <canvas id="previewCanvas" aria-label="업로드한 사진"></canvas>
     </div>
+
+    <div class="pool-head">
+      <h3>후보 연예인</h3>
+      <span id="poolCount">사진 불러오는 중</span>
+    </div>
+    <div class="pool" id="pool"></div>
   </section>
 
   <section class="card" id="resultCard" hidden>
@@ -290,10 +289,16 @@
     <h2>닮은꼴 순위 발표!</h2>
     <p class="verdict" id="verdict"></p>
     <div class="podium" id="podium"></div>
-    <p class="note">닮음 지수는 두 얼굴의 특징값(128개 숫자)이 얼마나 가까운지로 계산해요. 재미로만 봐주세요!</p>
+    <p class="note">
+      닮음 지수는 두 얼굴의 특징값(128개 숫자)이 얼마나 가까운지로 계산해요. 재미로만 봐주세요!
+      연예인 이름을 누르면 사진 출처인 위키백과 문서가 열려요.
+    </p>
   </section>
 
-  <footer>얼굴 인식: face-api.js · 모든 분석은 기기 안에서만 이루어져요</footer>
+  <footer>
+    연예인 사진: <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> (위키백과 대표 이미지)
+    · 얼굴 인식: face-api.js
+  </footer>
 </div>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -304,177 +309,224 @@
 </svg>
 
 <script>
-const CDN_MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/';
-const LOCAL_MODEL_URL = 'model/';
-const STORAGE_KEY = 'lookalike.celebs.v1';
-const THUMB = 200;
+// [한글 이름, 영문 위키백과 문서 제목, 성별]
+const CELEBS = [
+  ['아이유', 'IU (singer)', 'f'], ['수지', 'Bae Suzy', 'f'], ['김태희', 'Kim Tae-hee', 'f'],
+  ['전지현', 'Jun Ji-hyun', 'f'], ['송혜교', 'Song Hye-kyo', 'f'], ['한소희', 'Han So-hee', 'f'],
+  ['김고은', 'Kim Go-eun', 'f'], ['박신혜', 'Park Shin-hye', 'f'], ['손예진', 'Son Ye-jin', 'f'],
+  ['김연아', 'Kim Yuna', 'f'], ['장원영', 'Jang Won-young', 'f'], ['안유진', 'An Yu-jin', 'f'],
+  ['카리나', 'Karina (singer)', 'f'], ['윈터', 'Winter (singer)', 'f'], ['제니', 'Jennie (singer)', 'f'],
+  ['지수', 'Jisoo', 'f'], ['로제', 'Rosé (singer)', 'f'], ['리사', 'Lisa (rapper)', 'f'],
+  ['윤아', 'Im Yoon-ah', 'f'], ['태연', 'Taeyeon', 'f'], ['나연', 'Nayeon', 'f'],
+  ['쯔위', 'Tzuyu', 'f'], ['박보영', 'Park Bo-young', 'f'], ['신민아', 'Shin Min-a', 'f'],
+  ['김유정', 'Kim Yoo-jung', 'f'], ['문가영', 'Moon Ga-young', 'f'], ['김세정', 'Kim Se-jeong', 'f'],
+  ['한효주', 'Han Hyo-joo', 'f'], ['고윤정', 'Go Youn-jung', 'f'], ['김혜수', 'Kim Hye-soo', 'f'],
+  ['이영애', 'Lee Young-ae', 'f'], ['정호연', 'Jung Ho-yeon', 'f'], ['김지원', 'Kim Ji-won (actress)', 'f'],
+  ['설현', 'Kim Seol-hyun', 'f'], ['하니', 'Hanni (singer)', 'f'], ['민지', 'Minji (singer)', 'f'],
+  ['공유', 'Gong Yoo', 'm'], ['현빈', 'Hyun Bin', 'm'], ['송중기', 'Song Joong-ki', 'm'],
+  ['박서준', 'Park Seo-joon', 'm'], ['이민호', 'Lee Min-ho (actor, born 1987)', 'm'], ['김수현', 'Kim Soo-hyun', 'm'],
+  ['차은우', 'Cha Eun-woo', 'm'], ['뷔', 'V (singer)', 'm'], ['정국', 'Jungkook', 'm'],
+  ['지민', 'Jimin (singer)', 'm'], ['진', 'Jin (singer)', 'm'], ['슈가', 'Suga (rapper)', 'm'],
+  ['RM', 'RM (rapper)', 'm'], ['제이홉', 'J-Hope', 'm'], ['이정재', 'Lee Jung-jae', 'm'],
+  ['마동석', 'Ma Dong-seok', 'm'], ['강동원', 'Gang Dong-won', 'm'], ['조인성', 'Jo In-sung', 'm'],
+  ['박보검', 'Park Bo-gum', 'm'], ['이종석', 'Lee Jong-suk', 'm'], ['지창욱', 'Ji Chang-wook', 'm'],
+  ['송강', 'Song Kang (actor)', 'm'], ['변우석', 'Byeon Woo-seok', 'm'], ['안효섭', 'Ahn Hyo-seop', 'm'],
+  ['손흥민', 'Son Heung-min', 'm'], ['유재석', 'Yoo Jae-suk', 'm'], ['이병헌', 'Lee Byung-hun', 'm'],
+  ['황정민', 'Hwang Jung-min', 'm'], ['정해인', 'Jung Hae-in', 'm'], ['지드래곤', 'G-Dragon', 'm'],
+  ['백현', 'Baekhyun', 'm'], ['이광수', 'Lee Kwang-soo', 'm'], ['남주혁', 'Nam Joo-hyuk', 'm'],
+  ['소지섭', 'So Ji-sub', 'm'], ['김우빈', 'Kim Woo-bin', 'm'], ['이제훈', 'Lee Je-hoon', 'm'],
+];
+
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/';
+const WIKI_API = 'https://en.wikipedia.org/w/api.php';
+const DB_KEY = 'lookalike.db.v2';
+const THUMB = 180;
+const MAX_PHOTO_SIDE = 1024; // 휴대폰 고화질 사진은 줄여서 분석 (속도·메모리)
 
 const $ = (id) => document.getElementById(id);
-let modelsReady = false;
-let celebs = loadCelebs(); // [{id, name, thumb, descriptor:number[]}]
+let gender = 'all';
+let myDescriptor = null;
+let db = [];             // 얼굴 특징값이 준비된 연예인
+let dbDone = false;
+let dbReadyResolve;
+const dbReady = new Promise(r => { dbReadyResolve = r; });
 
-function setStatus(msg, isError = false) {
+/* ---------------- 공통 ---------------- */
+function setStatus(msg, { error = false, progress = null } = {}) {
   $('statusText').textContent = msg;
-  $('status').classList.toggle('error', isError);
+  $('status').classList.toggle('error', error);
   $('status').hidden = !msg;
+  $('progress').hidden = progress === null;
+  if (progress !== null) $('progressBar').style.width = Math.round(progress * 100) + '%';
 }
 
-function loadCelebs() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
+const storage = {
+  get() { try { return JSON.parse(localStorage.getItem(DB_KEY)) || {}; } catch { return {}; } },
+  set(v) { try { localStorage.setItem(DB_KEY, JSON.stringify(v)); } catch {} },
+};
 
-function saveCelebs() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(celebs));
-  } catch {
-    setStatus('브라우저에 저장하지 못했어요. 새로고침하면 등록한 연예인이 사라질 수 있어요.', true);
-  }
-}
-
-function nameFromFile(filename) {
-  return filename
-    .replace(/\.[^.]+$/, '')           // 확장자 제거
-    .replace(/[_\-\s]*\(?\d+\)?$/, '') // 끝의 번호 제거 (아이유_2, 아이유 (3))
-    .trim() || filename;
-}
-
-function readImage(file) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('이미지를 읽을 수 없어요: ' + file.name));
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-const detectorOptions = () => new faceapi.SsdMobilenetv1Options({ minConfidence: 0.6 });
+const detectorOptions = () => new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.45 });
 
 // 사진 속 얼굴 중 가장 큰 얼굴 하나를 분석
-async function analyzeLargestFace(img) {
+async function analyzeLargestFace(input) {
   const results = await faceapi
-    .detectAllFaces(img, detectorOptions())
+    .detectAllFaces(input, detectorOptions())
     .withFaceLandmarks()
     .withFaceDescriptors();
   if (!results.length) return null;
-  return results.reduce((a, b) =>
-    a.detection.box.area >= b.detection.box.area ? a : b);
+  return results.reduce((a, b) => a.detection.box.area >= b.detection.box.area ? a : b);
 }
 
-function faceThumb(img, box) {
-  const pad = Math.max(box.width, box.height) * 0.35;
-  const size = Math.max(box.width, box.height) + pad * 2;
+function faceThumb(source, box) {
+  const side = Math.max(box.width, box.height) * 1.7;
   const cx = box.x + box.width / 2;
   const cy = box.y + box.height / 2;
   const c = document.createElement('canvas');
   c.width = c.height = THUMB;
-  c.getContext('2d').drawImage(img, cx - size / 2, cy - size / 2, size, size, 0, 0, THUMB, THUMB);
-  return c.toDataURL('image/jpeg', 0.8);
+  c.getContext('2d').drawImage(source, cx - side / 2, cy - side / 2, side, side, 0, 0, THUMB, THUMB);
+  return c.toDataURL('image/jpeg', 0.78);
 }
 
-function renderCelebs() {
-  const grid = $('celebGrid');
-  grid.innerHTML = '';
-  const names = new Set(celebs.map(c => c.name));
-  $('celebCount').textContent = celebs.length ? `${names.size}명 · 사진 ${celebs.length}장` : '';
-  $('clearArea').hidden = !celebs.length;
-  if (!celebs.length) {
-    grid.innerHTML = `<div class="empty">
-      <div class="ghost-face"><span></span><span></span><span></span></div>
-      <div>아직 등록된 연예인이 없어요. <b>＋ 연예인 사진 추가</b>를 눌러 첫 번째 연예인을 넣어주세요!</div>
-    </div>`;
-    return;
-  }
-  for (const c of celebs) {
-    const el = document.createElement('div');
-    el.className = 'celeb';
-    el.innerHTML = `<img alt=""><button class="del" type="button" title="삭제">✕</button><div class="name"></div>`;
-    el.querySelector('img').src = c.thumb;
-    el.querySelector('.name').textContent = c.name;
-    el.querySelector('.del').onclick = () => {
-      celebs = celebs.filter(x => x.id !== c.id);
-      saveCelebs();
-      renderCelebs();
-    };
-    grid.appendChild(el);
-  }
+function loadImage(src, crossOrigin) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    if (crossOrigin) img.crossOrigin = 'anonymous';
+    const timer = setTimeout(() => reject(new Error('timeout')), 20000);
+    img.onload = () => { clearTimeout(timer); resolve(img); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error('load failed')); };
+    img.src = src;
+  });
 }
 
-// 전체 삭제는 페이지 안에서 한 번 더 확인
-function showClearConfirm() {
-  $('clearArea').innerHTML = `<span class="confirm">정말 모두 지울까요?
-    <button class="btn small danger" type="button" id="clearYes">지우기</button>
-    <button class="btn small ghost" type="button" id="clearNo">취소</button></span>`;
-  $('clearYes').onclick = () => { celebs = []; saveCelebs(); resetClearArea(); renderCelebs(); };
-  $('clearNo').onclick = resetClearArea;
-}
-function resetClearArea() {
-  $('clearArea').innerHTML = '<button class="btn ghost" id="clearCelebBtn" type="button">전체 삭제</button>';
-  $('clearCelebBtn').onclick = showClearConfirm;
-}
-
-async function addCelebFiles(files) {
-  if (!modelsReady) {
-    setStatus('AI 모델을 아직 불러오는 중이에요. 잠시 후 다시 시도해 주세요.', true);
-    return;
-  }
-  const failed = [];
-  let i = 0;
-  for (const file of files) {
-    i++;
-    setStatus(`연예인 얼굴 익히는 중... (${i}/${files.length}) ${file.name}`);
-    try {
-      const img = await readImage(file);
-      const face = await analyzeLargestFace(img);
-      URL.revokeObjectURL(img.src);
-      if (!face) { failed.push(file.name); continue; }
-      celebs.push({
-        id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
-        name: nameFromFile(file.name),
-        thumb: faceThumb(img, face.detection.box),
-        descriptor: Array.from(face.descriptor, v => +v.toFixed(5)),
-      });
-    } catch {
-      failed.push(file.name);
+/* ---------------- 연예인 사진 가져오기 (위키백과) ---------------- */
+async function fetchWikiImages(titles) {
+  const found = {};
+  for (let i = 0; i < titles.length; i += 40) {
+    const chunk = titles.slice(i, i + 40);
+    const params = new URLSearchParams({
+      action: 'query', format: 'json', formatversion: '2', origin: '*', redirects: '1',
+      prop: 'pageimages', piprop: 'thumbnail|name', pithumbsize: '500', titles: chunk.join('|'),
+    });
+    const res = await fetch(`${WIKI_API}?${params}`);
+    if (!res.ok) throw new Error('wiki ' + res.status);
+    const q = (await res.json()).query || {};
+    const hop = {};
+    for (const n of q.normalized || []) hop[n.from] = n.to;
+    for (const r of q.redirects || []) hop[r.from] = r.to;
+    const pages = {};
+    for (const p of q.pages || []) pages[p.title] = p;
+    for (const t of chunk) {
+      let cur = t;
+      for (let k = 0; k < 3 && hop[cur]; k++) cur = hop[cur];
+      const p = pages[cur];
+      if (p && p.thumbnail) found[t] = { src: p.thumbnail.source, page: p.title };
     }
   }
-  saveCelebs();
-  renderCelebs();
-  setStatus(failed.length
-    ? `얼굴을 찾지 못한 사진 ${failed.length}장은 빼고 등록했어요: ${failed.join(', ')}`
-    : '', failed.length > 0);
+  return found;
 }
 
-// 거리(0~) → 닮음 지수(0~100). 같은 사람 기준선(0.6) 부근이 약 50점
+function renderPool() {
+  const list = db.filter(c => gender === 'all' || c.g === gender);
+  const pool = $('pool');
+  pool.innerHTML = '';
+  for (const c of list) {
+    const f = document.createElement('figure');
+    f.innerHTML = '<img alt="" loading="lazy"><figcaption></figcaption>';
+    f.querySelector('img').src = c.thumb;
+    f.querySelector('figcaption').textContent = c.name;
+    pool.appendChild(f);
+  }
+  if (!dbDone) {
+    for (let i = 0; i < 3; i++) pool.insertAdjacentHTML('beforeend', '<figure><div class="ph"></div></figure>');
+  }
+  $('poolCount').textContent = dbDone ? `${list.length}명` : `${list.length}명 · 더 불러오는 중`;
+}
+
+async function buildDatabase() {
+  const cache = storage.get();
+  const fromCache = () => CELEBS
+    .map(([name, title, g]) => cache[title] && cache[title].d ? { name, title, g, ...cache[title] } : null)
+    .filter(Boolean);
+
+  db = fromCache();
+  renderPool();
+  const todo = CELEBS.filter(([, title]) => !(title in cache));
+
+  if (todo.length) {
+    let found = {};
+    try {
+      setStatus('인터넷에서 연예인 사진을 찾는 중이에요...', { progress: 0 });
+      found = await fetchWikiImages(todo.map(c => c[1]));
+    } catch (e) {
+      console.warn(e);
+    }
+    const withImg = todo.filter(([, title]) => found[title]);
+    // 사진이 없는 문서는 다음에 다시 찾지 않도록 기록
+    for (const [, title] of todo) if (!found[title] && Object.keys(found).length) cache[title] = { none: 1 };
+
+    // 이미지는 여러 장을 미리 받아두고, 얼굴 분석은 하나씩
+    const loads = withImg.map(([, title]) => loadImage(found[title].src, true).catch(() => null));
+    for (let i = 0; i < withImg.length; i++) {
+      const [name, title, g] = withImg[i];
+      setStatus(`연예인 얼굴을 익히는 중이에요 (${i + 1}/${withImg.length}) · 처음 한 번만 걸려요`,
+        { progress: (i + 1) / withImg.length });
+      const img = await loads[i];
+      if (!img) continue; // 네트워크 실패는 다음 방문 때 다시 시도
+      try {
+        const face = await analyzeLargestFace(img);
+        if (!face) { cache[title] = { none: 1 }; continue; }
+        cache[title] = {
+          page: found[title].page,
+          thumb: faceThumb(img, face.detection.box),
+          d: Array.from(face.descriptor, v => +v.toFixed(4)),
+        };
+        db.push({ name, title, g, ...cache[title] });
+        if (db.length % 4 === 0) { storage.set(cache); renderPool(); }
+      } catch (e) {
+        console.warn(title, e);
+      }
+    }
+    storage.set(cache);
+    db = fromCache();
+  }
+
+  dbDone = true;
+  renderPool();
+  if (!db.length) {
+    setStatus('인터넷에서 연예인 사진을 가져오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.', { error: true });
+  } else {
+    setStatus('');
+  }
+  dbReadyResolve();
+}
+
+/* ---------------- 내 사진 분석 ---------------- */
 function toScore(distance) {
+  // 거리(0~) → 닮음 지수(0~100). 같은 사람 기준선(0.6) 부근이 약 50점
   const s = 1 - (distance - 0.2) / 0.8;
   return Math.round(Math.max(0, Math.min(1, s)) * 100);
 }
 
 function verdictText(name, score) {
-  if (score >= 85) return `<b>${name}</b> 님과 거의 도플갱어! 혹시 본인 아니에요?`;
-  if (score >= 65) return `<b>${name}</b> 님과 많이 닮았어요. 닮았다는 소리 자주 듣죠?`;
-  if (score >= 45) return `<b>${name}</b> 님과 은근히 닮은 구석이 있어요.`;
+  if (score >= 70) return `<b>${name}</b> 님과 거의 도플갱어! 혹시 본인 아니에요?`;
+  if (score >= 55) return `<b>${name}</b> 님과 많이 닮았어요. 닮았다는 소리 자주 듣죠?`;
+  if (score >= 40) return `<b>${name}</b> 님과 은근히 닮은 구석이 있어요.`;
   return `가장 가까운 건 <b>${name}</b> 님! 나만의 개성이 뚜렷한 얼굴이에요.`;
-}
-
-function rankCelebs(descriptor) {
-  // 같은 이름의 여러 사진 중 가장 가까운 거리를 대표값으로 사용
-  const best = new Map();
-  for (const c of celebs) {
-    const d = faceapi.euclideanDistance(descriptor, c.descriptor);
-    const cur = best.get(c.name);
-    if (!cur || d < cur.distance) best.set(c.name, { name: c.name, thumb: c.thumb, distance: d });
-  }
-  return [...best.values()].sort((a, b) => a.distance - b.distance).slice(0, 3);
 }
 
 const escapeHtml = (s) => s.replace(/[&<>"']/g, ch =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 
-function renderResults(top) {
+function rank() {
+  return db
+    .filter(c => gender === 'all' || c.g === gender)
+    .map(c => ({ ...c, distance: faceapi.euclideanDistance(myDescriptor, c.d) }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 3);
+}
+
+function renderResults(scroll) {
+  const top = rank();
   const podium = $('podium');
   podium.innerHTML = '';
   top.forEach((r, idx) => {
@@ -485,100 +537,120 @@ function renderResults(top) {
       ${idx === 0 ? '<svg class="crown" viewBox="0 0 52 36" aria-hidden="true"><use href="#crown"/></svg>' : ''}
       <div class="medal">${idx + 1}등</div>
       <div><img alt=""></div>
-      <div class="cname"></div>
+      <div class="cname"><a target="_blank" rel="noopener"></a></div>
       <div class="bar"><div style="width:0"></div></div>
       <div class="score">닮음 지수 <b>${score}%</b></div>`;
     el.querySelector('img').src = r.thumb;
-    el.querySelector('.cname').textContent = r.name;
+    const a = el.querySelector('.cname a');
+    a.textContent = r.name;
+    a.href = 'https://en.wikipedia.org/wiki/' + encodeURIComponent(r.page.replace(/ /g, '_'));
     podium.appendChild(el);
     requestAnimationFrame(() => requestAnimationFrame(() => {
       el.querySelector('.bar > div').style.width = score + '%';
     }));
   });
-  $('verdict').innerHTML = top.length ? verdictText(escapeHtml(top[0].name), toScore(top[0].distance)) : '';
+  $('verdict').innerHTML = top.length
+    ? verdictText(escapeHtml(top[0].name), toScore(top[0].distance))
+    : '이 조건에 맞는 연예인이 아직 없어요.';
   $('resultCard').hidden = false;
-  $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (scroll) $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function drawBox(img, box) {
-  const canvas = $('overlay');
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
+// 큰 사진을 줄여서 캔버스에 그림 (휴대폰 사진의 회전 정보는 브라우저가 반영)
+async function photoToCanvas(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url, false);
+    const scale = Math.min(1, MAX_PHOTO_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = $('previewCanvas');
+    c.width = Math.round(img.naturalWidth * scale);
+    c.height = Math.round(img.naturalHeight * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function drawBox(canvas, box) {
   const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (!box) return;
-  const r = Math.min(box.width, box.height) * 0.18;
-  ctx.lineWidth = Math.max(4, img.naturalWidth / 110);
+  ctx.save();
+  ctx.lineWidth = Math.max(4, canvas.width / 110);
   ctx.strokeStyle = '#ff6f9c';
   ctx.setLineDash([ctx.lineWidth * 2.5, ctx.lineWidth * 1.5]);
   ctx.beginPath();
+  const r = Math.min(box.width, box.height) * 0.18;
   if (ctx.roundRect) ctx.roundRect(box.x, box.y, box.width, box.height, r);
   else ctx.rect(box.x, box.y, box.width, box.height);
   ctx.stroke();
+  ctx.restore();
 }
 
+let busy = false;
 async function analyzePhoto(file) {
-  if (!modelsReady) {
-    setStatus('AI 모델을 아직 불러오는 중이에요. 잠시 후 다시 시도해 주세요.', true);
+  if (busy) return;
+  if (!window.modelsReady) {
+    setStatus('AI 모델을 아직 불러오는 중이에요. 잠시 후 다시 시도해 주세요.', { error: true });
     return;
   }
-  if (!celebs.length) {
-    setStatus('먼저 STEP 1에서 비교할 연예인 사진을 등록해 주세요.', true);
-    return;
+  busy = true;
+  try {
+    $('resultCard').hidden = true;
+    let canvas;
+    try {
+      canvas = await photoToCanvas(file);
+    } catch {
+      setStatus('이 사진 파일은 열 수 없어요. JPG나 PNG 사진으로 다시 시도해 주세요.', { error: true });
+      return;
+    }
+    $('preview').hidden = false;
+    setStatus('내 얼굴을 꼼꼼히 살펴보는 중...');
+    // 연예인 데이터를 만드는 중이면 그 작업이 끝난 뒤에 분석 (같은 AI 엔진을 함께 써요)
+    if (!dbDone) setStatus('연예인 얼굴을 다 익히면 바로 분석할게요...', { progress: null });
+    await dbReady;
+    const face = await analyzeLargestFace(canvas);
+    if (!face) {
+      setStatus('사진에서 얼굴을 찾지 못했어요. 얼굴이 크고 밝게 나온 다른 사진으로 해볼까요?', { error: true });
+      return;
+    }
+    drawBox(canvas, face.detection.box);
+    myDescriptor = face.descriptor;
+    if (!db.length) return;
+    setStatus('');
+    renderResults(true);
+  } finally {
+    busy = false;
   }
-  setStatus('얼굴을 꼼꼼히 살펴보는 중...');
-  $('resultCard').hidden = true;
-  const img = $('previewImg');
-  const loaded = await readImage(file);
-  img.src = loaded.src;
-  await img.decode().catch(() => {});
-  $('preview').hidden = false;
-  drawBox(img, null);
-
-  const face = await analyzeLargestFace(img);
-  if (!face) {
-    setStatus('사진에서 얼굴을 찾지 못했어요. 얼굴이 잘 보이는 다른 사진으로 해볼까요?', true);
-    return;
-  }
-  drawBox(img, face.detection.box);
-  setStatus('');
-  renderResults(rankCelebs(face.descriptor));
 }
 
-async function loadModels(base) {
-  await Promise.all([
-    faceapi.nets.ssdMobilenetv1.loadFromUri(base),
-    faceapi.nets.faceLandmark68Net.loadFromUri(base),
-    faceapi.nets.faceRecognitionNet.loadFromUri(base),
-  ]);
-}
-
+/* ---------------- 시작 ---------------- */
 async function init() {
-  resetClearArea();
-  renderCelebs();
+  renderPool();
   if (typeof faceapi === 'undefined') {
-    setStatus('얼굴 분석 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.', true);
+    setStatus('얼굴 분석 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.', { error: true });
     return;
   }
   try {
-    // 페이지 옆에 model/ 폴더가 있으면 그걸 쓰고, 없으면 CDN에서 받아요
-    const hasLocal = location.protocol !== 'file:' &&
-      await fetch(LOCAL_MODEL_URL + 'ssd_mobilenetv1_model-weights_manifest.json')
-        .then(r => r.ok).catch(() => false);
-    await loadModels(hasLocal ? LOCAL_MODEL_URL : CDN_MODEL_URL);
-    modelsReady = true;
-    setStatus('');
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+    ]);
+    window.modelsReady = true;
   } catch (e) {
     console.error(e);
-    setStatus('AI 모델을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.', true);
+    setStatus('AI 모델을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.', { error: true });
+    return;
   }
+  await buildDatabase();
 }
 
-$('celebInput').addEventListener('change', async (e) => {
-  const files = [...e.target.files];
-  e.target.value = '';
-  await addCelebFiles(files);
-});
+document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+  gender = btn.dataset.g;
+  document.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  renderPool();
+  if (myDescriptor && dbDone) renderResults(false);
+}));
 $('photoInput').addEventListener('change', (e) => {
   const file = e.target.files[0];
   e.target.value = '';
