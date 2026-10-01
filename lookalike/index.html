@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>닮은꼴 연예인 찾기</title>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.js"></script>
+<style>
+  :root {
+    --bg: #f6f5fb;
+    --card: #ffffff;
+    --text: #1d1b26;
+    --muted: #6b6880;
+    --line: #e4e1ef;
+    --accent: #6c4cf5;
+    --accent-soft: #eee9ff;
+    --gold: #e8b100;
+    --silver: #9aa3b2;
+    --bronze: #c77b3a;
+    --danger: #d63c4a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #13121a;
+      --card: #1e1c28;
+      --text: #ecebf3;
+      --muted: #9d9ab0;
+      --line: #2f2c3d;
+      --accent: #9b85ff;
+      --accent-soft: #2a2442;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+  header h1 { margin: 0 0 4px; font-size: 28px; }
+  header p { margin: 0; color: var(--muted); }
+  .status {
+    margin: 16px 0 24px; padding: 10px 14px; border-radius: 10px;
+    background: var(--accent-soft); color: var(--accent); font-size: 14px;
+  }
+  .status.error { background: #fde8ea; color: var(--danger); }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px; margin-bottom: 20px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 18px; }
+  .card .desc { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 16px; border-radius: 10px; border: 1px solid var(--accent);
+    background: var(--accent); color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer;
+  }
+  .btn.ghost { background: transparent; color: var(--accent); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  input[type=file] { display: none; }
+
+  .celeb-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 12px; margin-top: 16px;
+  }
+  .celeb {
+    position: relative; text-align: center; font-size: 13px;
+  }
+  .celeb img {
+    width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--bg);
+  }
+  .celeb .name { margin-top: 4px; word-break: break-all; }
+  .celeb .del {
+    position: absolute; top: 4px; right: 4px; width: 22px; height: 22px;
+    border-radius: 50%; border: none; background: rgba(0,0,0,.55); color: #fff;
+    cursor: pointer; font-size: 13px; line-height: 22px; padding: 0;
+  }
+  .empty { color: var(--muted); font-size: 14px; margin-top: 12px; }
+
+  .drop {
+    display: block;
+    border: 2px dashed var(--line); border-radius: 14px; padding: 28px 16px;
+    text-align: center; color: var(--muted); cursor: pointer; transition: .15s;
+  }
+  .drop.over, .drop:hover { border-color: var(--accent); color: var(--accent); }
+  .preview { position: relative; max-width: 360px; margin: 16px auto 0; display: none; }
+  .preview img, .preview canvas { width: 100%; display: block; border-radius: 12px; }
+  .preview canvas { position: absolute; inset: 0; }
+
+  .podium {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    align-items: end; margin-top: 8px;
+  }
+  .rank {
+    text-align: center; padding: 16px 10px; border-radius: 14px;
+    border: 2px solid var(--line); background: var(--card);
+  }
+  .rank.r1 { order: 2; border-color: var(--gold); padding-top: 28px; }
+  .rank.r2 { order: 1; border-color: var(--silver); }
+  .rank.r3 { order: 3; border-color: var(--bronze); }
+  .rank .medal {
+    display: inline-block; padding: 2px 12px; border-radius: 999px;
+    font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 10px;
+  }
+  .r1 .medal { background: var(--gold); }
+  .r2 .medal { background: var(--silver); }
+  .r3 .medal { background: var(--bronze); }
+  .rank img {
+    width: 80%; max-width: 160px; aspect-ratio: 1; object-fit: cover; border-radius: 50%;
+    border: 3px solid var(--line);
+  }
+  .r1 img { border-color: var(--gold); max-width: 190px; }
+  .rank .cname { font-weight: 700; font-size: 17px; margin-top: 8px; word-break: break-all; }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 8px 6px 4px; }
+  .bar > div { height: 100%; background: var(--accent); border-radius: 99px; transition: width .8s; }
+  .score { font-size: 13px; color: var(--muted); }
+  .score b { color: var(--text); font-size: 16px; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 14px; }
+
+  @media (max-width: 560px) {
+    .podium { grid-template-columns: 1fr; }
+    .rank.r1, .rank.r2, .rank.r3 { order: 0; }
+    .rank img { width: 50%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🔍 닮은꼴 연예인 찾기</h1>
+    <p>인물 사진을 올리면 얼굴을 분석해 가장 닮은 연예인 TOP 3를 알려드려요.</p>
+  </header>
+
+  <div id="status" class="status">AI 얼굴 분석 모델을 불러오는 중...</div>
+
+  <section class="card">
+    <h2>① 비교할 연예인 등록</h2>
+    <p class="desc">
+      연예인 얼굴 사진을 여러 장 선택하세요. <b>파일 이름이 연예인 이름</b>으로 사용됩니다
+      (예: <code>아이유.jpg</code>, <code>아이유_2.jpg</code> → "아이유"). 한 사람당 여러 장을 넣으면 더 정확해져요.
+      등록한 정보는 이 브라우저에만 저장됩니다.
+    </p>
+    <div class="row">
+      <label class="btn" id="addCelebBtn">
+        + 연예인 사진 추가
+        <input type="file" id="celebInput" accept="image/*" multiple>
+      </label>
+      <button class="btn ghost" id="clearCelebBtn">전체 삭제</button>
+      <span id="celebCount" class="score"></span>
+    </div>
+    <div id="celebGrid" class="celeb-grid"></div>
+  </section>
+
+  <section class="card">
+    <h2>② 내 사진 분석</h2>
+    <p class="desc">정면 얼굴이 잘 보이는 사진일수록 결과가 정확합니다. 사진은 서버로 전송되지 않고 브라우저 안에서만 분석돼요.</p>
+    <label class="drop" id="drop">
+      <div style="font-size:32px">📷</div>
+      <div>여기를 클릭하거나 사진을 끌어다 놓으세요</div>
+      <input type="file" id="photoInput" accept="image/*">
+    </label>
+    <div class="preview" id="preview">
+      <img id="previewImg" alt="업로드한 사진">
+      <canvas id="overlay"></canvas>
+    </div>
+  </section>
+
+  <section class="card" id="resultCard" style="display:none">
+    <h2>🏆 닮은꼴 순위</h2>
+    <p class="desc" id="resultDesc"></p>
+    <div class="podium" id="podium"></div>
+    <p class="note">
+      닮음 지수는 얼굴 특징 벡터(128차원) 간 거리로 계산한 값입니다. 재미로만 봐주세요 🙂
+    </p>
+  </section>
+</div>
+
+<script>
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/';
+const STORAGE_KEY = 'lookalike.celebs.v1';
+const THUMB = 200;
+
+const $ = (id) => document.getElementById(id);
+let modelsReady = false;
+let celebs = loadCelebs(); // [{id, name, thumb, descriptor:number[]}]
+
+function setStatus(msg, isError = false) {
+  const el = $('status');
+  el.textContent = msg;
+  el.classList.toggle('error', isError);
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function loadCelebs() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveCelebs() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(celebs));
+  } catch {
+    setStatus('브라우저 저장 공간이 부족해 일부 연예인 정보가 새로고침 후 사라질 수 있어요.', true);
+  }
+}
+
+function nameFromFile(filename) {
+  return filename
+    .replace(/\.[^.]+$/, '')        // 확장자 제거
+    .replace(/[_\-\s]*\(?\d+\)?$/, '') // 끝의 번호 제거 (아이유_2, 아이유 (3))
+    .trim() || filename;
+}
+
+function readImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('이미지를 읽을 수 없습니다: ' + file.name));
+    img.src = url;
+  });
+}
+
+const detectorOptions = () => new faceapi.SsdMobilenetv1Options({ minConfidence: 0.6 });
+
+// 사진 속 얼굴 중 가장 큰 얼굴 하나를 분석
+async function analyzeLargestFace(img) {
+  const results = await faceapi
+    .detectAllFaces(img, detectorOptions())
+    .withFaceLandmarks()
+    .withFaceDescriptors();
+  if (!results.length) return null;
+  return results.reduce((a, b) =>
+    a.detection.box.area >= b.detection.box.area ? a : b);
+}
+
+function faceThumb(img, box) {
+  const pad = Math.max(box.width, box.height) * 0.35;
+  const size = Math.max(box.width, box.height) + pad * 2;
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const c = document.createElement('canvas');
+  c.width = c.height = THUMB;
+  c.getContext('2d').drawImage(img, cx - size / 2, cy - size / 2, size, size, 0, 0, THUMB, THUMB);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+
+function renderCelebs() {
+  const grid = $('celebGrid');
+  grid.innerHTML = '';
+  const names = new Set(celebs.map(c => c.name));
+  $('celebCount').textContent = celebs.length
+    ? `${names.size}명 · 사진 ${celebs.length}장 등록됨` : '';
+  if (!celebs.length) {
+    grid.innerHTML = '<div class="empty">아직 등록된 연예인이 없어요. 사진을 추가해 주세요.</div>';
+    return;
+  }
+  for (const c of celebs) {
+    const el = document.createElement('div');
+    el.className = 'celeb';
+    el.innerHTML = `<img alt=""><button class="del" title="삭제">✕</button><div class="name"></div>`;
+    el.querySelector('img').src = c.thumb;
+    el.querySelector('.name').textContent = c.name;
+    el.querySelector('.del').onclick = () => {
+      celebs = celebs.filter(x => x.id !== c.id);
+      saveCelebs();
+      renderCelebs();
+    };
+    grid.appendChild(el);
+  }
+}
+
+async function addCelebFiles(files) {
+  if (!modelsReady) return;
+  const failed = [];
+  let i = 0;
+  for (const file of files) {
+    i++;
+    setStatus(`연예인 사진 분석 중... (${i}/${files.length}) ${file.name}`);
+    try {
+      const img = await readImage(file);
+      const face = await analyzeLargestFace(img);
+      URL.revokeObjectURL(img.src);
+      if (!face) { failed.push(file.name); continue; }
+      celebs.push({
+        id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+        name: nameFromFile(file.name),
+        thumb: faceThumb(img, face.detection.box),
+        descriptor: Array.from(face.descriptor, v => +v.toFixed(5)),
+      });
+    } catch (e) {
+      failed.push(file.name);
+    }
+  }
+  saveCelebs();
+  renderCelebs();
+  setStatus(failed.length
+    ? `얼굴을 찾지 못한 사진 ${failed.length}장은 제외했어요: ${failed.join(', ')}`
+    : '', failed.length > 0);
+}
+
+// 거리(0~) → 닮음 지수(0~100). 같은 사람 기준선(0.6) 부근이 약 50점
+function toScore(distance) {
+  const s = 1 - (distance - 0.2) / 0.8;
+  return Math.round(Math.max(0, Math.min(1, s)) * 100);
+}
+
+function rankCelebs(descriptor) {
+  // 같은 이름의 여러 사진 중 가장 가까운 거리를 대표값으로 사용
+  const best = new Map();
+  for (const c of celebs) {
+    const d = faceapi.euclideanDistance(descriptor, c.descriptor);
+    const cur = best.get(c.name);
+    if (!cur || d < cur.distance) best.set(c.name, { name: c.name, thumb: c.thumb, distance: d });
+  }
+  return [...best.values()].sort((a, b) => a.distance - b.distance).slice(0, 3);
+}
+
+function renderResults(top) {
+  const podium = $('podium');
+  podium.innerHTML = '';
+  top.forEach((r, idx) => {
+    const score = toScore(r.distance);
+    const el = document.createElement('div');
+    el.className = `rank r${idx + 1}`;
+    el.innerHTML = `
+      <div class="medal">${['🥇 1등', '🥈 2등', '🥉 3등'][idx]}</div>
+      <div><img alt=""></div>
+      <div class="cname"></div>
+      <div class="bar"><div style="width:0"></div></div>
+      <div class="score">닮음 지수 <b>${score}%</b></div>`;
+    el.querySelector('img').src = r.thumb;
+    el.querySelector('.cname').textContent = r.name;
+    podium.appendChild(el);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.querySelector('.bar > div').style.width = score + '%';
+    }));
+  });
+  $('resultDesc').textContent = top.length
+    ? `등록된 연예인 중 가장 닮은 ${top.length}명을 찾았어요!` : '';
+  $('resultCard').style.display = 'block';
+  $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function drawBox(img, box) {
+  const canvas = $('overlay');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!box) return;
+  ctx.strokeStyle = '#6c4cf5';
+  ctx.lineWidth = Math.max(3, img.naturalWidth / 150);
+  ctx.strokeRect(box.x, box.y, box.width, box.height);
+}
+
+async function analyzePhoto(file) {
+  if (!modelsReady) return;
+  if (!celebs.length) {
+    setStatus('먼저 ① 단계에서 비교할 연예인 사진을 등록해 주세요.', true);
+    return;
+  }
+  setStatus('얼굴을 분석하는 중...');
+  $('resultCard').style.display = 'none';
+  const img = $('previewImg');
+  const loaded = await readImage(file);
+  img.src = loaded.src;
+  await img.decode().catch(() => {});
+  $('preview').style.display = 'block';
+  drawBox(img, null);
+
+  const face = await analyzeLargestFace(img);
+  if (!face) {
+    setStatus('사진에서 얼굴을 찾지 못했어요. 얼굴이 잘 보이는 다른 사진으로 시도해 주세요.', true);
+    return;
+  }
+  drawBox(img, face.detection.box);
+  setStatus('');
+  renderResults(rankCelebs(face.descriptor));
+}
+
+async function init() {
+  renderCelebs();
+  if (typeof faceapi === 'undefined') {
+    setStatus('얼굴 분석 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.', true);
+    return;
+  }
+  try {
+    await Promise.all([
+      faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+    ]);
+    modelsReady = true;
+    setStatus('');
+  } catch (e) {
+    console.error(e);
+    setStatus('AI 모델을 불러오지 못했어요. 새로고침 후 다시 시도해 주세요.', true);
+  }
+}
+
+$('celebInput').addEventListener('change', async (e) => {
+  await addCelebFiles([...e.target.files]);
+  e.target.value = '';
+});
+$('clearCelebBtn').addEventListener('click', () => {
+  if (!celebs.length || !confirm('등록된 연예인을 모두 삭제할까요?')) return;
+  celebs = [];
+  saveCelebs();
+  renderCelebs();
+});
+$('photoInput').addEventListener('change', (e) => {
+  if (e.target.files[0]) analyzePhoto(e.target.files[0]);
+  e.target.value = '';
+});
+const drop = $('drop');
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => {
+  e.preventDefault();
+  drop.classList.remove('over');
+  const file = [...e.dataTransfer.files].find(f => f.type.startsWith('image/'));
+  if (file) analyzePhoto(file);
+});
+
+init();
+</script>
+</body>
+</html>
