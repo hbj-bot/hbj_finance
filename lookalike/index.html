@@ -2,186 +2,310 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>닮은꼴 연예인 찾기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.js"></script>
 <style>
+  /* Layout: 가운데 정렬된 한 줄 컬럼, 스티커처럼 테두리 진한 카드와 시상대 결과 */
   :root {
-    --bg: #f6f5fb;
+    --bg: #fff4f0;
+    --dot: #ffd9e3;
     --card: #ffffff;
-    --text: #1d1b26;
-    --muted: #6b6880;
-    --line: #e4e1ef;
-    --accent: #6c4cf5;
-    --accent-soft: #eee9ff;
-    --gold: #e8b100;
-    --silver: #9aa3b2;
-    --bronze: #c77b3a;
-    --danger: #d63c4a;
+    --ink: #3d2a33;
+    --muted: #8c7480;
+    --line: #f3d6df;
+    --pink: #ff6f9c;
+    --pink-deep: #e2477a;
+    --pink-soft: #ffe3ec;
+    --mint: #5fd0b5;
+    --mint-soft: #daf5ee;
+    --sun: #ffc23d;
+    --silver: #a9b4c4;
+    --bronze: #e0935a;
+    --danger: #d9435a;
+    --danger-soft: #ffe5e8;
+    --font-display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #13121a;
-      --card: #1e1c28;
-      --text: #ecebf3;
-      --muted: #9d9ab0;
-      --line: #2f2c3d;
-      --accent: #9b85ff;
-      --accent-soft: #2a2442;
+    :root:not([data-theme="light"]) {
+      --bg: #221920; --dot: #33242d; --card: #2d2229; --ink: #f8e9ef; --muted: #bba3ae;
+      --line: #4a3540; --pink: #ff86ab; --pink-deep: #ff9fbd; --pink-soft: #4a2a37;
+      --mint: #6fd8bf; --mint-soft: #213f38; --danger-soft: #4a2229;
+      color-scheme: dark;
     }
   }
+  :root[data-theme="dark"] {
+    --bg: #221920; --dot: #33242d; --card: #2d2229; --ink: #f8e9ef; --muted: #bba3ae;
+    --line: #4a3540; --pink: #ff86ab; --pink-deep: #ff9fbd; --pink-soft: #4a2a37;
+    --mint: #6fd8bf; --mint-soft: #213f38; --danger-soft: #4a2229;
+    color-scheme: dark;
+  }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body {
     margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
-    line-height: 1.5;
+    background-color: var(--bg);
+    background-image: radial-gradient(var(--dot) 2px, transparent 2.5px);
+    background-size: 26px 26px;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
   }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
-  header h1 { margin: 0 0 4px; font-size: 28px; }
-  header p { margin: 0; color: var(--muted); }
+  .wrap { max-width: 880px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px; }
+
+  /* ---------- 헤더 ---------- */
+  .hero { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
+  .mascot { width: 112px; height: 112px; flex: none; animation: bob 2.6s ease-in-out infinite; }
+  .hero h1 {
+    margin: 0; font-family: var(--font-display); font-weight: 400;
+    font-size: clamp(32px, 7vw, 46px); line-height: 1.15; text-wrap: balance;
+  }
+  .hero h1 .hl { color: var(--pink); }
+  .hero p { margin: 4px 0 0; color: var(--muted); }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
+
   .status {
-    margin: 16px 0 24px; padding: 10px 14px; border-radius: 10px;
-    background: var(--accent-soft); color: var(--accent); font-size: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin: 22px auto 0; max-width: 560px; padding: 10px 16px; border-radius: 999px;
+    background: var(--mint-soft); color: var(--ink); font-size: 14px;
   }
-  .status.error { background: #fde8ea; color: var(--danger); }
+  .status.error { background: var(--danger-soft); color: var(--danger); border-radius: 18px; }
+  .spinner {
+    width: 16px; height: 16px; border-radius: 50%; flex: none;
+    border: 3px solid var(--mint); border-right-color: transparent; animation: spin .8s linear infinite;
+  }
+  .status.error .spinner { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- 카드 ---------- */
   .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
-    padding: 20px; margin-bottom: 20px;
+    position: relative; background: var(--card); border: 2.5px solid var(--ink);
+    border-radius: 26px; padding: 24px 22px; margin-top: 30px;
+    box-shadow: 6px 6px 0 var(--pink-soft);
   }
-  .card h2 { margin: 0 0 4px; font-size: 18px; }
-  .card .desc { margin: 0 0 16px; color: var(--muted); font-size: 14px; }
+  .step {
+    position: absolute; top: -15px; left: 22px; padding: 2px 14px; border-radius: 999px;
+    font-family: var(--font-display); font-size: 15px; letter-spacing: .04em;
+    background: var(--pink); color: #fff; border: 2.5px solid var(--ink);
+  }
+  .step.mint { background: var(--mint); color: #1f3d36; }
+  .step.sun { background: var(--sun); color: #3d2a33; }
+  .card h2 { margin: 6px 0 4px; font-family: var(--font-display); font-weight: 400; font-size: 23px; }
+  .card .desc { margin: 0 0 18px; color: var(--muted); font-size: 14px; max-width: 65ch; }
+  .card .desc b { color: var(--ink); }
+  code { font-family: inherit; background: var(--pink-soft); color: var(--ink); padding: 1px 6px; border-radius: 6px; }
+
+  /* ---------- 버튼 ---------- */
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .btn {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 10px 16px; border-radius: 10px; border: 1px solid var(--accent);
-    background: var(--accent); color: #fff; font-size: 14px; font-weight: 600;
-    cursor: pointer;
+    padding: 10px 20px; border-radius: 999px; border: 2.5px solid var(--ink);
+    background: var(--pink); color: #fff; font-family: var(--font-display); font-size: 16px;
+    cursor: pointer; box-shadow: 0 4px 0 var(--ink); transition: transform .1s, box-shadow .1s;
   }
-  .btn.ghost { background: transparent; color: var(--accent); }
-  .btn:disabled { opacity: .45; cursor: not-allowed; }
-  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  input[type=file] { display: none; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn.ghost { background: var(--card); color: var(--ink); }
+  .btn.small { padding: 6px 14px; font-size: 14px; box-shadow: 0 3px 0 var(--ink); }
+  .btn.danger { background: var(--danger); color: #fff; }
+  .btn:focus-visible, .drop:focus-within, .row:focus-within > label.btn { outline: 3px solid var(--mint); outline-offset: 3px; }
+  input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .count { font-size: 14px; color: var(--muted); }
+  .confirm { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; }
 
+  /* ---------- 연예인 목록 ---------- */
   .celeb-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-    gap: 12px; margin-top: 16px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 14px; margin-top: 18px;
   }
-  .celeb {
-    position: relative; text-align: center; font-size: 13px;
-  }
+  .celeb { position: relative; text-align: center; font-size: 13px; min-width: 0; }
   .celeb img {
-    width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px;
-    border: 1px solid var(--line); background: var(--bg);
+    width: 100%; max-width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 50%;
+    border: 2.5px solid var(--ink); background: var(--pink-soft);
   }
+  .celeb:nth-child(3n+1) img { transform: rotate(-3deg); }
+  .celeb:nth-child(3n+2) img { transform: rotate(2deg); }
   .celeb .name { margin-top: 4px; word-break: break-all; }
   .celeb .del {
-    position: absolute; top: 4px; right: 4px; width: 22px; height: 22px;
-    border-radius: 50%; border: none; background: rgba(0,0,0,.55); color: #fff;
-    cursor: pointer; font-size: 13px; line-height: 22px; padding: 0;
+    position: absolute; top: 0; right: 4px; width: 24px; height: 24px;
+    border-radius: 50%; border: 2px solid var(--ink); background: var(--card); color: var(--ink);
+    cursor: pointer; font-size: 12px; line-height: 1; padding: 0;
   }
-  .empty { color: var(--muted); font-size: 14px; margin-top: 12px; }
+  .celeb .del:hover { background: var(--danger); color: #fff; }
+  .empty {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-radius: 18px; background: var(--pink-soft); color: var(--ink); font-size: 14px;
+  }
+  .ghost-face { display: flex; flex: none; }
+  .ghost-face span {
+    width: 34px; height: 34px; border-radius: 50%; border: 2px dashed var(--pink);
+    background: var(--card); margin-left: -10px;
+  }
+  .ghost-face span:first-child { margin-left: 0; }
 
+  /* ---------- 업로드 ---------- */
   .drop {
-    display: block;
-    border: 2px dashed var(--line); border-radius: 14px; padding: 28px 16px;
-    text-align: center; color: var(--muted); cursor: pointer; transition: .15s;
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    border: 3px dashed var(--pink); border-radius: 24px; padding: 26px 16px;
+    text-align: center; color: var(--muted); cursor: pointer; background: var(--pink-soft);
+    transition: transform .15s;
   }
-  .drop.over, .drop:hover { border-color: var(--accent); color: var(--accent); }
-  .preview { position: relative; max-width: 360px; margin: 16px auto 0; display: none; }
-  .preview img, .preview canvas { width: 100%; display: block; border-radius: 12px; }
-  .preview canvas { position: absolute; inset: 0; }
+  .drop:hover, .drop.over { transform: scale(1.01) rotate(-.5deg); color: var(--ink); }
+  .drop .cam { width: 64px; height: 64px; }
+  .drop:hover .cam, .drop.over .cam { animation: wiggle .5s ease-in-out; }
+  .drop strong { font-family: var(--font-display); font-weight: 400; font-size: 19px; color: var(--ink); }
+  @keyframes wiggle { 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+  .preview {
+    position: relative; max-width: 320px; margin: 20px auto 0;
+    border: 2.5px solid var(--ink); border-radius: 22px; overflow: hidden;
+    box-shadow: 6px 6px 0 var(--mint-soft);
+  }
+  .preview img, .preview canvas { width: 100%; max-width: 100%; display: block; }
+  .preview canvas { position: absolute; inset: 0; height: 100%; }
 
-  .podium {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-    align-items: end; margin-top: 8px;
+  /* ---------- 결과 ---------- */
+  .verdict {
+    margin: 0 0 30px; padding: 12px 18px; border-radius: 18px; background: var(--mint-soft);
+    font-size: 15px;
   }
+  .verdict b { font-family: var(--font-display); font-weight: 400; font-size: 19px; color: var(--pink-deep); }
+  .podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: end; }
   .rank {
-    text-align: center; padding: 16px 10px; border-radius: 14px;
-    border: 2px solid var(--line); background: var(--card);
+    position: relative; text-align: center; padding: 22px 10px 16px; border-radius: 24px;
+    border: 2.5px solid var(--ink); background: var(--card); min-width: 0;
+    animation: pop .5s cubic-bezier(.3,1.6,.6,1) both;
   }
-  .rank.r1 { order: 2; border-color: var(--gold); padding-top: 28px; }
-  .rank.r2 { order: 1; border-color: var(--silver); }
-  .rank.r3 { order: 3; border-color: var(--bronze); }
-  .rank .medal {
-    display: inline-block; padding: 2px 12px; border-radius: 999px;
-    font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 10px;
+  .rank.r1 { order: 2; padding-top: 34px; box-shadow: 0 6px 0 var(--sun); animation-delay: .25s; }
+  .rank.r2 { order: 1; box-shadow: 0 6px 0 var(--silver); animation-delay: .1s; }
+  .rank.r3 { order: 3; box-shadow: 0 6px 0 var(--bronze); animation-delay: .4s; }
+  @keyframes pop { from { transform: scale(.6) translateY(20px); opacity: 0; } }
+  .crown { position: absolute; top: -26px; left: 50%; width: 52px; height: 36px; transform: translateX(-50%) rotate(-8deg); }
+  .medal {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 2px 14px; border-radius: 999px; border: 2px solid var(--ink);
+    font-family: var(--font-display); font-size: 16px; color: #3d2a33; margin-bottom: 10px;
   }
-  .r1 .medal { background: var(--gold); }
+  .r1 .medal { background: var(--sun); }
   .r2 .medal { background: var(--silver); }
   .r3 .medal { background: var(--bronze); }
   .rank img {
-    width: 80%; max-width: 160px; aspect-ratio: 1; object-fit: cover; border-radius: 50%;
-    border: 3px solid var(--line);
+    width: 78%; max-width: 150px; aspect-ratio: 1; object-fit: cover; border-radius: 50%;
+    border: 3px solid var(--ink);
   }
-  .r1 img { border-color: var(--gold); max-width: 190px; }
-  .rank .cname { font-weight: 700; font-size: 17px; margin-top: 8px; word-break: break-all; }
-  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 8px 6px 4px; }
-  .bar > div { height: 100%; background: var(--accent); border-radius: 99px; transition: width .8s; }
-  .score { font-size: 13px; color: var(--muted); }
-  .score b { color: var(--text); font-size: 16px; }
-  .note { font-size: 12px; color: var(--muted); margin-top: 14px; }
+  .r1 img { max-width: 180px; }
+  .cname { font-family: var(--font-display); font-size: 20px; margin-top: 8px; word-break: break-all; }
+  .bar {
+    height: 12px; background: var(--pink-soft); border: 2px solid var(--ink);
+    border-radius: 99px; overflow: hidden; margin: 8px 8px 4px;
+  }
+  .bar > div { height: 100%; background: var(--pink); border-radius: 99px; transition: width 1s .5s; }
+  .score { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .score b { color: var(--ink); font-family: var(--font-display); font-weight: 400; font-size: 20px; }
+  .note { font-size: 12px; color: var(--muted); margin: 22px 0 0; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
 
   @media (max-width: 560px) {
-    .podium { grid-template-columns: 1fr; }
+    .hero { text-align: center; }
+    .mascot { width: 90px; height: 90px; }
+    .podium { grid-template-columns: 1fr; gap: 30px; }
     .rank.r1, .rank.r2, .rank.r3 { order: 0; }
-    .rank img { width: 50%; }
+    .rank img { width: 46%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>🔍 닮은꼴 연예인 찾기</h1>
-    <p>인물 사진을 올리면 얼굴을 분석해 가장 닮은 연예인 TOP 3를 알려드려요.</p>
+  <header class="hero">
+    <svg class="mascot" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="54" cy="56" r="40" fill="#ffe3cf" stroke="#3d2a33" stroke-width="4"/>
+      <path d="M18 46 Q22 14 56 14 Q90 16 92 46 Q78 30 58 34 Q36 30 18 46Z" fill="#3d2a33"/>
+      <ellipse cx="40" cy="58" rx="5" ry="6.5" fill="#3d2a33"/>
+      <ellipse cx="66" cy="58" rx="5" ry="6.5" fill="#3d2a33"/>
+      <circle cx="42" cy="56" r="1.8" fill="#fff"/><circle cx="68" cy="56" r="1.8" fill="#fff"/>
+      <ellipse cx="30" cy="72" rx="7" ry="4.5" fill="#ff9fbb"/>
+      <ellipse cx="78" cy="72" rx="7" ry="4.5" fill="#ff9fbb"/>
+      <path d="M46 72 Q53 79 60 72" fill="none" stroke="#3d2a33" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="90" cy="84" r="17" fill="#daf5ee" fill-opacity=".75" stroke="#3d2a33" stroke-width="4.5"/>
+      <path d="M102 96 L114 108" stroke="#3d2a33" stroke-width="7" stroke-linecap="round"/>
+      <path d="M84 78 Q88 74 93 76" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <path d="M100 18 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#ffc23d" stroke="#3d2a33" stroke-width="2"/>
+    </svg>
+    <div>
+      <h1>나랑 닮은 <span class="hl">연예인</span>은?</h1>
+      <p>사진 한 장이면 AI가 얼굴을 분석해서 닮은꼴 TOP 3를 골라줘요</p>
+    </div>
   </header>
 
-  <div id="status" class="status">AI 얼굴 분석 모델을 불러오는 중...</div>
+  <div id="status" class="status"><span class="spinner"></span><span id="statusText">AI 얼굴 분석 모델을 불러오는 중이에요...</span></div>
 
   <section class="card">
-    <h2>① 비교할 연예인 등록</h2>
+    <span class="step">STEP 1</span>
+    <h2>비교할 연예인 모으기</h2>
     <p class="desc">
-      연예인 얼굴 사진을 여러 장 선택하세요. <b>파일 이름이 연예인 이름</b>으로 사용됩니다
-      (예: <code>아이유.jpg</code>, <code>아이유_2.jpg</code> → "아이유"). 한 사람당 여러 장을 넣으면 더 정확해져요.
-      등록한 정보는 이 브라우저에만 저장됩니다.
+      연예인 얼굴 사진을 여러 장 골라주세요. <b>파일 이름이 연예인 이름</b>이 돼요.
+      <code>아이유.jpg</code>, <code>아이유_2.jpg</code>는 둘 다 "아이유"로 묶이고, 한 사람당 사진이 많을수록 정확해져요.
+      등록한 연예인은 이 브라우저에만 저장돼요.
     </p>
     <div class="row">
-      <label class="btn" id="addCelebBtn">
-        + 연예인 사진 추가
-        <input type="file" id="celebInput" accept="image/*" multiple>
-      </label>
-      <button class="btn ghost" id="clearCelebBtn">전체 삭제</button>
-      <span id="celebCount" class="score"></span>
+      <label class="btn" for="celebInput">＋ 연예인 사진 추가</label>
+      <input type="file" id="celebInput" accept="image/*" multiple>
+      <span id="clearArea"></span>
+      <span id="celebCount" class="count"></span>
     </div>
     <div id="celebGrid" class="celeb-grid"></div>
   </section>
 
   <section class="card">
-    <h2>② 내 사진 분석</h2>
-    <p class="desc">정면 얼굴이 잘 보이는 사진일수록 결과가 정확합니다. 사진은 서버로 전송되지 않고 브라우저 안에서만 분석돼요.</p>
-    <label class="drop" id="drop">
-      <div style="font-size:32px">📷</div>
-      <div>여기를 클릭하거나 사진을 끌어다 놓으세요</div>
+    <span class="step mint">STEP 2</span>
+    <h2>내 사진 올리기</h2>
+    <p class="desc">정면 얼굴이 또렷하게 나온 사진일수록 잘 맞혀요. 사진은 어디에도 전송되지 않고 내 브라우저 안에서만 분석해요.</p>
+    <label class="drop" id="drop" for="photoInput">
+      <svg class="cam" viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="6" y="18" width="52" height="36" rx="10" fill="#ff6f9c" stroke="#3d2a33" stroke-width="3"/>
+        <rect x="20" y="10" width="20" height="12" rx="4" fill="#ff6f9c" stroke="#3d2a33" stroke-width="3"/>
+        <circle cx="32" cy="36" r="11" fill="#fff" stroke="#3d2a33" stroke-width="3"/>
+        <circle cx="32" cy="36" r="5" fill="#3d2a33"/>
+        <circle cx="49" cy="26" r="2.5" fill="#ffc23d"/>
+      </svg>
+      <strong>여기를 눌러 사진 고르기</strong>
+      <span>또는 사진을 끌어다 놓아도 돼요</span>
       <input type="file" id="photoInput" accept="image/*">
     </label>
-    <div class="preview" id="preview">
+    <div class="preview" id="preview" hidden>
       <img id="previewImg" alt="업로드한 사진">
       <canvas id="overlay"></canvas>
     </div>
   </section>
 
-  <section class="card" id="resultCard" style="display:none">
-    <h2>🏆 닮은꼴 순위</h2>
-    <p class="desc" id="resultDesc"></p>
+  <section class="card" id="resultCard" hidden>
+    <span class="step sun">RESULT</span>
+    <h2>닮은꼴 순위 발표!</h2>
+    <p class="verdict" id="verdict"></p>
     <div class="podium" id="podium"></div>
-    <p class="note">
-      닮음 지수는 얼굴 특징 벡터(128차원) 간 거리로 계산한 값입니다. 재미로만 봐주세요 🙂
-    </p>
+    <p class="note">닮음 지수는 두 얼굴의 특징값(128개 숫자)이 얼마나 가까운지로 계산해요. 재미로만 봐주세요!</p>
   </section>
+
+  <footer>얼굴 인식: face-api.js · 모든 분석은 기기 안에서만 이루어져요</footer>
 </div>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="crown" viewBox="0 0 52 36">
+    <path d="M4 32 L2 8 L15 18 L26 3 L37 18 L50 8 L48 32Z" fill="#ffc23d" stroke="#3d2a33" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="26" cy="23" r="3.5" fill="#ff6f9c"/>
+  </symbol>
+</svg>
+
 <script>
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/';
+const CDN_MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model/';
+const LOCAL_MODEL_URL = 'model/';
 const STORAGE_KEY = 'lookalike.celebs.v1';
 const THUMB = 200;
 
@@ -190,10 +314,9 @@ let modelsReady = false;
 let celebs = loadCelebs(); // [{id, name, thumb, descriptor:number[]}]
 
 function setStatus(msg, isError = false) {
-  const el = $('status');
-  el.textContent = msg;
-  el.classList.toggle('error', isError);
-  el.style.display = msg ? 'block' : 'none';
+  $('statusText').textContent = msg;
+  $('status').classList.toggle('error', isError);
+  $('status').hidden = !msg;
 }
 
 function loadCelebs() {
@@ -207,24 +330,23 @@ function saveCelebs() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(celebs));
   } catch {
-    setStatus('브라우저 저장 공간이 부족해 일부 연예인 정보가 새로고침 후 사라질 수 있어요.', true);
+    setStatus('브라우저에 저장하지 못했어요. 새로고침하면 등록한 연예인이 사라질 수 있어요.', true);
   }
 }
 
 function nameFromFile(filename) {
   return filename
-    .replace(/\.[^.]+$/, '')        // 확장자 제거
+    .replace(/\.[^.]+$/, '')           // 확장자 제거
     .replace(/[_\-\s]*\(?\d+\)?$/, '') // 끝의 번호 제거 (아이유_2, 아이유 (3))
     .trim() || filename;
 }
 
 function readImage(file) {
   return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('이미지를 읽을 수 없습니다: ' + file.name));
-    img.src = url;
+    img.onerror = () => reject(new Error('이미지를 읽을 수 없어요: ' + file.name));
+    img.src = URL.createObjectURL(file);
   });
 }
 
@@ -256,16 +378,19 @@ function renderCelebs() {
   const grid = $('celebGrid');
   grid.innerHTML = '';
   const names = new Set(celebs.map(c => c.name));
-  $('celebCount').textContent = celebs.length
-    ? `${names.size}명 · 사진 ${celebs.length}장 등록됨` : '';
+  $('celebCount').textContent = celebs.length ? `${names.size}명 · 사진 ${celebs.length}장` : '';
+  $('clearArea').hidden = !celebs.length;
   if (!celebs.length) {
-    grid.innerHTML = '<div class="empty">아직 등록된 연예인이 없어요. 사진을 추가해 주세요.</div>';
+    grid.innerHTML = `<div class="empty">
+      <div class="ghost-face"><span></span><span></span><span></span></div>
+      <div>아직 등록된 연예인이 없어요. <b>＋ 연예인 사진 추가</b>를 눌러 첫 번째 연예인을 넣어주세요!</div>
+    </div>`;
     return;
   }
   for (const c of celebs) {
     const el = document.createElement('div');
     el.className = 'celeb';
-    el.innerHTML = `<img alt=""><button class="del" title="삭제">✕</button><div class="name"></div>`;
+    el.innerHTML = `<img alt=""><button class="del" type="button" title="삭제">✕</button><div class="name"></div>`;
     el.querySelector('img').src = c.thumb;
     el.querySelector('.name').textContent = c.name;
     el.querySelector('.del').onclick = () => {
@@ -277,13 +402,29 @@ function renderCelebs() {
   }
 }
 
+// 전체 삭제는 페이지 안에서 한 번 더 확인
+function showClearConfirm() {
+  $('clearArea').innerHTML = `<span class="confirm">정말 모두 지울까요?
+    <button class="btn small danger" type="button" id="clearYes">지우기</button>
+    <button class="btn small ghost" type="button" id="clearNo">취소</button></span>`;
+  $('clearYes').onclick = () => { celebs = []; saveCelebs(); resetClearArea(); renderCelebs(); };
+  $('clearNo').onclick = resetClearArea;
+}
+function resetClearArea() {
+  $('clearArea').innerHTML = '<button class="btn ghost" id="clearCelebBtn" type="button">전체 삭제</button>';
+  $('clearCelebBtn').onclick = showClearConfirm;
+}
+
 async function addCelebFiles(files) {
-  if (!modelsReady) return;
+  if (!modelsReady) {
+    setStatus('AI 모델을 아직 불러오는 중이에요. 잠시 후 다시 시도해 주세요.', true);
+    return;
+  }
   const failed = [];
   let i = 0;
   for (const file of files) {
     i++;
-    setStatus(`연예인 사진 분석 중... (${i}/${files.length}) ${file.name}`);
+    setStatus(`연예인 얼굴 익히는 중... (${i}/${files.length}) ${file.name}`);
     try {
       const img = await readImage(file);
       const face = await analyzeLargestFace(img);
@@ -295,14 +436,14 @@ async function addCelebFiles(files) {
         thumb: faceThumb(img, face.detection.box),
         descriptor: Array.from(face.descriptor, v => +v.toFixed(5)),
       });
-    } catch (e) {
+    } catch {
       failed.push(file.name);
     }
   }
   saveCelebs();
   renderCelebs();
   setStatus(failed.length
-    ? `얼굴을 찾지 못한 사진 ${failed.length}장은 제외했어요: ${failed.join(', ')}`
+    ? `얼굴을 찾지 못한 사진 ${failed.length}장은 빼고 등록했어요: ${failed.join(', ')}`
     : '', failed.length > 0);
 }
 
@@ -310,6 +451,13 @@ async function addCelebFiles(files) {
 function toScore(distance) {
   const s = 1 - (distance - 0.2) / 0.8;
   return Math.round(Math.max(0, Math.min(1, s)) * 100);
+}
+
+function verdictText(name, score) {
+  if (score >= 85) return `<b>${name}</b> 님과 거의 도플갱어! 혹시 본인 아니에요?`;
+  if (score >= 65) return `<b>${name}</b> 님과 많이 닮았어요. 닮았다는 소리 자주 듣죠?`;
+  if (score >= 45) return `<b>${name}</b> 님과 은근히 닮은 구석이 있어요.`;
+  return `가장 가까운 건 <b>${name}</b> 님! 나만의 개성이 뚜렷한 얼굴이에요.`;
 }
 
 function rankCelebs(descriptor) {
@@ -323,6 +471,9 @@ function rankCelebs(descriptor) {
   return [...best.values()].sort((a, b) => a.distance - b.distance).slice(0, 3);
 }
 
+const escapeHtml = (s) => s.replace(/[&<>"']/g, ch =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
 function renderResults(top) {
   const podium = $('podium');
   podium.innerHTML = '';
@@ -331,7 +482,8 @@ function renderResults(top) {
     const el = document.createElement('div');
     el.className = `rank r${idx + 1}`;
     el.innerHTML = `
-      <div class="medal">${['🥇 1등', '🥈 2등', '🥉 3등'][idx]}</div>
+      ${idx === 0 ? '<svg class="crown" viewBox="0 0 52 36" aria-hidden="true"><use href="#crown"/></svg>' : ''}
+      <div class="medal">${idx + 1}등</div>
       <div><img alt=""></div>
       <div class="cname"></div>
       <div class="bar"><div style="width:0"></div></div>
@@ -343,9 +495,8 @@ function renderResults(top) {
       el.querySelector('.bar > div').style.width = score + '%';
     }));
   });
-  $('resultDesc').textContent = top.length
-    ? `등록된 연예인 중 가장 닮은 ${top.length}명을 찾았어요!` : '';
-  $('resultCard').style.display = 'block';
+  $('verdict').innerHTML = top.length ? verdictText(escapeHtml(top[0].name), toScore(top[0].distance)) : '';
+  $('resultCard').hidden = false;
   $('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -356,29 +507,37 @@ function drawBox(img, box) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!box) return;
-  ctx.strokeStyle = '#6c4cf5';
-  ctx.lineWidth = Math.max(3, img.naturalWidth / 150);
-  ctx.strokeRect(box.x, box.y, box.width, box.height);
+  const r = Math.min(box.width, box.height) * 0.18;
+  ctx.lineWidth = Math.max(4, img.naturalWidth / 110);
+  ctx.strokeStyle = '#ff6f9c';
+  ctx.setLineDash([ctx.lineWidth * 2.5, ctx.lineWidth * 1.5]);
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(box.x, box.y, box.width, box.height, r);
+  else ctx.rect(box.x, box.y, box.width, box.height);
+  ctx.stroke();
 }
 
 async function analyzePhoto(file) {
-  if (!modelsReady) return;
-  if (!celebs.length) {
-    setStatus('먼저 ① 단계에서 비교할 연예인 사진을 등록해 주세요.', true);
+  if (!modelsReady) {
+    setStatus('AI 모델을 아직 불러오는 중이에요. 잠시 후 다시 시도해 주세요.', true);
     return;
   }
-  setStatus('얼굴을 분석하는 중...');
-  $('resultCard').style.display = 'none';
+  if (!celebs.length) {
+    setStatus('먼저 STEP 1에서 비교할 연예인 사진을 등록해 주세요.', true);
+    return;
+  }
+  setStatus('얼굴을 꼼꼼히 살펴보는 중...');
+  $('resultCard').hidden = true;
   const img = $('previewImg');
   const loaded = await readImage(file);
   img.src = loaded.src;
   await img.decode().catch(() => {});
-  $('preview').style.display = 'block';
+  $('preview').hidden = false;
   drawBox(img, null);
 
   const face = await analyzeLargestFace(img);
   if (!face) {
-    setStatus('사진에서 얼굴을 찾지 못했어요. 얼굴이 잘 보이는 다른 사진으로 시도해 주세요.', true);
+    setStatus('사진에서 얼굴을 찾지 못했어요. 얼굴이 잘 보이는 다른 사진으로 해볼까요?', true);
     return;
   }
   drawBox(img, face.detection.box);
@@ -386,18 +545,27 @@ async function analyzePhoto(file) {
   renderResults(rankCelebs(face.descriptor));
 }
 
+async function loadModels(base) {
+  await Promise.all([
+    faceapi.nets.ssdMobilenetv1.loadFromUri(base),
+    faceapi.nets.faceLandmark68Net.loadFromUri(base),
+    faceapi.nets.faceRecognitionNet.loadFromUri(base),
+  ]);
+}
+
 async function init() {
+  resetClearArea();
   renderCelebs();
   if (typeof faceapi === 'undefined') {
-    setStatus('얼굴 분석 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.', true);
+    setStatus('얼굴 분석 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.', true);
     return;
   }
   try {
-    await Promise.all([
-      faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-      faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-    ]);
+    // 페이지 옆에 model/ 폴더가 있으면 그걸 쓰고, 없으면 CDN에서 받아요
+    const hasLocal = location.protocol !== 'file:' &&
+      await fetch(LOCAL_MODEL_URL + 'ssd_mobilenetv1_model-weights_manifest.json')
+        .then(r => r.ok).catch(() => false);
+    await loadModels(hasLocal ? LOCAL_MODEL_URL : CDN_MODEL_URL);
     modelsReady = true;
     setStatus('');
   } catch (e) {
@@ -407,18 +575,14 @@ async function init() {
 }
 
 $('celebInput').addEventListener('change', async (e) => {
-  await addCelebFiles([...e.target.files]);
+  const files = [...e.target.files];
   e.target.value = '';
-});
-$('clearCelebBtn').addEventListener('click', () => {
-  if (!celebs.length || !confirm('등록된 연예인을 모두 삭제할까요?')) return;
-  celebs = [];
-  saveCelebs();
-  renderCelebs();
+  await addCelebFiles(files);
 });
 $('photoInput').addEventListener('change', (e) => {
-  if (e.target.files[0]) analyzePhoto(e.target.files[0]);
+  const file = e.target.files[0];
   e.target.value = '';
+  if (file) analyzePhoto(file);
 });
 const drop = $('drop');
 drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
